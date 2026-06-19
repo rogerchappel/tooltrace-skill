@@ -14,9 +14,12 @@ Ship.
 
 ## Verification Checklist
 
-- `npm test`
-- `npm run check`
-- `npm run build`
-- `npm run smoke`
-- `bash scripts/validate.sh`
+- `npm test` - pass
+- `npm run check` - pass
+- `npm run build` - pass
+- `npm run smoke` - pass
+- `bash scripts/validate.sh` - pass
 
+## Release Candidate Result
+
+The initial public build is ready for review. The package is classified as `ship` because it has a complete local-first CLI, reusable skill instructions, fixture-backed tests, smoke coverage, and documented approval boundaries.
