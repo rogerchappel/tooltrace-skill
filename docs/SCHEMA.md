@@ -20,3 +20,14 @@ Each JSONL line is one event.
 | `status` | string | `ok`, `failed`, or `pending`. |
 | `detail` | string | Short detail for review. |
 
+## Policy Config
+
+`--config` accepts a small JSON file:
+
+```json
+{
+  "failOn": "approval"
+}
+```
+
+Allowed thresholds are `info`, `approval`, and `error`.
