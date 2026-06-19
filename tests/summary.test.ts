@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import test from "node:test";
 import { summarize, shouldFail } from "../src/analyze.js";
 import { renderMarkdown } from "../src/render.js";
@@ -33,5 +34,15 @@ test("renders markdown proof summary", () => {
   ]);
   assert.match(renderMarkdown(summary), /ToolTrace Proof Summary/);
   assert.match(renderMarkdown(summary), /Activity Counts/);
+});
+
+test("matches expected clean proof report", () => {
+  const summary = summarize("examples/clean-events.jsonl", [
+    { kind: "command", title: "Run tests", command: "npm test", status: "ok" },
+    { kind: "tool", title: "Inspect files", tool: "file_fetch", status: "ok" },
+    { kind: "file", title: "Update docs", path: "docs/PRD.md", status: "ok" },
+    { kind: "complete", title: "Proof ready", status: "ok" }
+  ]);
+  assert.equal(renderMarkdown(summary), readFileSync("examples/expected-clean-report.md", "utf8"));
 });
 
