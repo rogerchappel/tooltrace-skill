@@ -1,0 +1,9 @@
+{"kind":"message","title":"Started release review","detail":"Agent began local verification"}
+{"kind":"command","title":"Run tests","command":"npm test","status":"ok","detail":"9 tests passed"}
+{"kind":"tool","title":"Read package metadata","tool":"file_fetch","status":"ok"}
+{"kind":"file","title":"Updated README","path":"README.md","status":"ok"}
+{"kind":"approval","title":"Publish package request","tool":"npm","status":"pending","detail":"Requires human approval"}
+{"kind":"error","title":"Smoke failed before fixture fix","command":"npm run smoke","status":"failed"}
+{"kind":"retry","title":"Smoke rerun after fix","command":"npm run smoke","status":"ok"}
+{"kind":"complete","title":"Release candidate evidence ready","status":"ok"}
+

@@ -1,0 +1,5 @@
+{"kind":"command","title":"Run tests","command":"npm test","status":"ok"}
+{"kind":"tool","title":"Inspect files","tool":"file_fetch","status":"ok"}
+{"kind":"file","title":"Update docs","path":"docs/PRD.md","status":"ok"}
+{"kind":"complete","title":"Proof ready","status":"ok"}
+
