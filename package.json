@@ -1,0 +1,38 @@
+{
+  "name": "tooltrace-skill",
+  "version": "0.1.0",
+  "description": "Agent skill and CLI for summarizing tool-call activity logs into reviewable proof.",
+  "type": "module",
+  "bin": {
+    "tooltrace-skill": "./dist/src/cli.js"
+  },
+  "files": [
+    "dist",
+    "SKILL.md",
+    "docs",
+    "examples",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "check": "tsc -p tsconfig.json --noEmit",
+    "test": "node --test dist/tests/*.test.js",
+    "pretest": "npm run build",
+    "smoke": "npm run build && node dist/src/cli.js summarize examples/tool-events.jsonl --out /tmp/tooltrace-skill-smoke.md && test -s /tmp/tooltrace-skill-smoke.md",
+    "validate": "bash scripts/validate.sh"
+  },
+  "keywords": [
+    "agent-skill",
+    "tool-calls",
+    "proof-of-work",
+    "jsonl",
+    "agent-audit"
+  ],
+  "author": "Roger Chappel",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/node": "^20.14.10",
+    "typescript": "^5.5.3"
+  }
+}
+
