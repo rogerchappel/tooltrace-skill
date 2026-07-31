@@ -20,6 +20,12 @@ Each JSONL line is one event.
 | `status` | string | `ok`, `failed`, or `pending`. |
 | `detail` | string | Short detail for review. |
 
+## Status semantics
+
+- An `approval` event with `status: "ok"` records a resolved approval and does not produce an `approval-requested` finding. Approvals with `status: "pending"` or no status remain unresolved findings.
+- A `complete` event with `status: "failed"` records a `failed-event` finding and is not completion proof, so a trace without another non-failed `complete` event also reports `missing-completion-proof`.
+- A `failed` status on any event produces a `failed-event` finding.
+
 ## Policy Config
 
 `--config` accepts a small JSON file:
