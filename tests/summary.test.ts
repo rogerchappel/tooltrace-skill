@@ -28,6 +28,37 @@ test("flags approvals failures and missing completion proof", () => {
   assert.equal(summary.findings.length, 3);
 });
 
+test("treats successful approvals as resolved", () => {
+  const summary = summarize("fixture", [
+    { kind: "approval", title: "Approved by maintainer", status: "ok" },
+    { kind: "complete", title: "Done", status: "ok" }
+  ]);
+  assert.deepEqual(summary.findings, []);
+  assert.equal(shouldFail(summary.findings, "approval"), false);
+});
+
+test("treats pending and unspecified approvals as unresolved", () => {
+  const summary = summarize("fixture", [
+    { kind: "approval", title: "Waiting for maintainer", status: "pending" },
+    { kind: "approval", title: "Approval status unavailable" },
+    { kind: "complete", title: "Done", status: "ok" }
+  ]);
+  assert.deepEqual(summary.findings.map((finding) => finding.code), [
+    "approval-requested",
+    "approval-requested"
+  ]);
+});
+
+test("does not accept a failed complete event as completion proof", () => {
+  const summary = summarize("fixture", [
+    { kind: "complete", title: "Run failed before delivery", status: "failed" }
+  ]);
+  assert.deepEqual(summary.findings.map((finding) => finding.code), [
+    "failed-event",
+    "missing-completion-proof"
+  ]);
+});
+
 test("renders markdown proof summary", () => {
   const summary = summarize("fixture", [
     { kind: "complete", title: "Done", status: "ok" }
@@ -45,4 +76,3 @@ test("matches expected clean proof report", () => {
   ]);
   assert.equal(renderMarkdown(summary), readFileSync("examples/expected-clean-report.md", "utf8"));
 });
-
