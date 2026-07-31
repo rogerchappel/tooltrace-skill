@@ -15,18 +15,22 @@ export function shouldFail(findings: Finding[], failOn: Risk): boolean {
 export function summarize(source: string, events: ToolEvent[]): TraceSummary {
   const findings: Finding[] = [];
   const counts = Object.fromEntries(EVENT_KINDS.map((kind) => [kind, 0])) as Record<EventKind, number>;
+  let hasCompletionProof = false;
 
   for (const event of events) {
     counts[event.kind] += 1;
-    if (event.kind === "approval") {
+    if (event.kind === "approval" && event.status !== "ok") {
       findings.push({ risk: "approval", code: "approval-requested", message: "Tool flow requested approval", title: event.title });
     }
     if (event.kind === "error" || event.status === "failed") {
       findings.push({ risk: "error", code: "failed-event", message: "Tool flow contains a failure", title: event.title });
     }
+    if (event.kind === "complete" && event.status !== "failed") {
+      hasCompletionProof = true;
+    }
   }
 
-  if (counts.complete === 0) {
+  if (!hasCompletionProof) {
     findings.push({ risk: "approval", code: "missing-completion-proof", message: "No completion proof event was found" });
   }
 
@@ -46,4 +50,3 @@ export function summarize(source: string, events: ToolEvent[]): TraceSummary {
 function unique(values: Array<string | undefined>): string[] {
   return [...new Set(values.filter((value): value is string => Boolean(value)))].sort();
 }
-
