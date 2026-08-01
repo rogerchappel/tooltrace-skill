@@ -18,6 +18,10 @@ function check(events: object[]) {
   return result;
 }
 
+function run(...args: string[]) {
+  return spawnSync(process.execPath, ["dist/src/cli.js", ...args], { encoding: "utf8" });
+}
+
 test("CLI exits successfully and omits findings for resolved approval proof", () => {
   const result = check([
     { kind: "approval", title: "Approved by maintainer", status: "ok" },
@@ -37,3 +41,34 @@ test("CLI reports failed completion and missing proof", () => {
     ["failed-event", "missing-completion-proof"]
   );
 });
+
+test("CLI summarizes valid input", () => {
+  const result = run("summarize", "examples/clean-events.jsonl", "--format", "json");
+  assert.equal(result.status, 0, result.stderr);
+  assert.equal(JSON.parse(result.stdout).source, "examples/clean-events.jsonl");
+});
+
+test("CLI prints help successfully only when explicitly requested", () => {
+  const help = run("--help");
+  assert.equal(help.status, 0, help.stderr);
+  assert.match(help.stdout, /Usage:/);
+
+  const missing = run();
+  assert.equal(missing.status, 1);
+  assert.match(missing.stderr, /Missing command/);
+});
+
+for (const [name, args, diagnostic] of [
+  ["unknown command", ["summrize", "examples/clean-events.jsonl"], /Unknown command: summrize/],
+  ["unsupported format", ["summarize", "examples/clean-events.jsonl", "--format", "yaml"], /Unsupported format: yaml/],
+  ["missing --out value", ["summarize", "examples/clean-events.jsonl", "--out"], /Missing value for --out/],
+  ["missing --format value", ["summarize", "examples/clean-events.jsonl", "--format"], /Missing value for --format/],
+  ["missing --fail-on value", ["check", "examples/clean-events.jsonl", "--fail-on"], /Missing value for --fail-on/],
+  ["missing --config value", ["check", "examples/clean-events.jsonl", "--config"], /Missing value for --config/]
+] as const) {
+  test(`CLI rejects ${name}`, () => {
+    const result = run(...args);
+    assert.equal(result.status, 1);
+    assert.match(result.stderr, diagnostic);
+  });
+}
