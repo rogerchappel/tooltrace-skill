@@ -13,6 +13,8 @@ Use this skill when an agent needs to explain tool activity in a compact, review
 
 - A local JSONL file with one tool event per line.
 - Optional `--fail-on` threshold for `info`, `approval`, or `error`.
+- Strict CLI syntax: `summarize` or `check`, an input file, and a value for every supplied option.
+- Report formats are limited to `markdown` and `json`; use `--help` or `help` for usage.
 
 ## Side-Effect Boundaries
 
@@ -37,4 +39,3 @@ tooltrace-skill summarize examples/tool-events.jsonl --out TOOLTRACE.md
 tooltrace-skill check examples/tool-events.jsonl --fail-on approval
 tooltrace-skill summarize examples/tool-events.jsonl --format json
 ```
-

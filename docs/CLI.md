@@ -16,5 +16,11 @@ tooltrace-skill check examples/tool-events.jsonl --fail-on approval
 tooltrace-skill check examples/tool-events.jsonl --config examples/tooltrace-skill.config.json
 ```
 
-Runs the same analysis and exits non-zero when findings meet the selected threshold.
+## Syntax and errors
 
+The command must be `summarize` or `check` and must be followed by an events file. `--out`, `--format`,
+`--fail-on`, and `--config` each require a value. Formats are limited to `markdown` and `json`, and fail
+thresholds to `info`, `approval`, and `error`. Unknown commands, unknown options, unsupported values, and
+missing values exit non-zero with a diagnostic. `tooltrace-skill --help` (or `help`) prints usage and exits 0.
+
+Runs the same analysis and exits non-zero when findings meet the selected threshold.
