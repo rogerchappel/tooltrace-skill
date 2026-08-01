@@ -16,22 +16,43 @@ interface Args {
 }
 
 function parseArgs(argv: string[]): Args {
-  const [command = "help", input, ...rest] = argv;
+  const [command, input, ...rest] = argv;
+  if (command === "help" || command === "--help") {
+    if (argv.length !== 1) throw new Error("Help does not accept additional arguments");
+    return { command: "help", format: "markdown" };
+  }
+  if (command !== "summarize" && command !== "check") {
+    throw new Error(command ? `Unknown command: ${command}` : "Missing command. Use --help for usage.");
+  }
+  if (!input || input.startsWith("--")) {
+    throw new Error(`Missing events file for ${command}`);
+  }
   const args: Args = {
-    command: command === "summarize" || command === "check" ? command : "help",
+    command,
     input,
     format: "markdown"
   };
 
   for (let index = 0; index < rest.length; index += 1) {
     const arg = rest[index];
-    if (arg === "--out") args.out = rest[++index];
-    else if (arg === "--format") args.format = rest[++index] === "json" ? "json" : "markdown";
-    else if (arg === "--fail-on") args.failOn = parseRisk(rest[++index]);
-    else if (arg === "--config") args.config = rest[++index];
+    if (arg === "--out") args.out = optionValue(rest, ++index, arg);
+    else if (arg === "--format") args.format = parseFormat(optionValue(rest, ++index, arg));
+    else if (arg === "--fail-on") args.failOn = parseRisk(optionValue(rest, ++index, arg));
+    else if (arg === "--config") args.config = optionValue(rest, ++index, arg);
     else throw new Error(`Unknown argument: ${arg}`);
   }
   return args;
+}
+
+function optionValue(args: string[], index: number, option: string): string {
+  const value = args[index];
+  if (!value || value.startsWith("--")) throw new Error(`Missing value for ${option}`);
+  return value;
+}
+
+function parseFormat(value: string): "markdown" | "json" {
+  if (value === "markdown" || value === "json") return value;
+  throw new Error(`Unsupported format: ${value}. Expected markdown or json.`);
 }
 
 function parseRisk(value: string | undefined): Risk {
@@ -50,11 +71,11 @@ Usage:
 
 async function main(): Promise<void> {
   const args = parseArgs(process.argv.slice(2));
-  if (args.command === "help" || !args.input) {
+  if (args.command === "help") {
     process.stdout.write(help());
-    process.exitCode = args.command === "help" ? 0 : 1;
     return;
   }
+  if (!args.input) throw new Error("Missing events file");
 
   const events = await readEvents(args.input);
   const config = await readConfig(args.config);
