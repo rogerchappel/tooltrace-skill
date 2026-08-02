@@ -6,13 +6,22 @@ const KINDS = new Set<EventKind>(["message", "command", "tool", "file", "approva
 export function parseJsonl(text: string): ToolEvent[] {
   return text
     .split(/\r?\n/)
-    .map((line) => line.trim())
-    .filter(Boolean)
-    .map((line, index) => normalize(JSON.parse(line), index + 1));
+    .map((line, index) => ({ text: line.trim(), number: index + 1 }))
+    .filter((line) => line.text !== "")
+    .map((line) => normalize(parseLine(line.text, line.number), line.number));
 }
 
 export async function readEvents(path: string): Promise<ToolEvent[]> {
   return parseJsonl(await readFile(path, "utf8"));
+}
+
+function parseLine(text: string, line: number): unknown {
+  try {
+    return JSON.parse(text);
+  } catch (error: unknown) {
+    const detail = error instanceof Error ? error.message : String(error);
+    throw new Error(`Line ${line} contains invalid JSON: ${detail}`);
+  }
 }
 
 function normalize(value: unknown, line: number): ToolEvent {
@@ -41,4 +50,3 @@ function normalize(value: unknown, line: number): ToolEvent {
 function stringValue(value: unknown): string | undefined {
   return typeof value === "string" && value.trim() !== "" ? value.trim() : undefined;
 }
-
