@@ -23,4 +23,16 @@ The command must be `summarize` or `check` and must be followed by an events fil
 thresholds to `info`, `approval`, and `error`. Unknown commands, unknown options, unsupported values, and
 missing values exit non-zero with a diagnostic. `tooltrace-skill --help` (or `help`) prints usage and exits 0.
 
+Blank JSONL lines are ignored, but diagnostics always use physical line numbers from the input file. Both
+schema validation failures and malformed JSON identify the affected line. For example, this input has a blank
+first line and invalid JSON on line 3:
+
+```bash
+printf '\n{"kind":"complete","title":"Done"}\n{malformed}\n' > /tmp/tooltrace-invalid.jsonl
+tooltrace-skill summarize /tmp/tooltrace-invalid.jsonl
+# Line 3 contains invalid JSON: ...
+```
+
+The command exits non-zero and writes the single-line diagnostic to standard error.
+
 Runs the same analysis and exits non-zero when findings meet the selected threshold.

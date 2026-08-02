@@ -17,3 +17,19 @@ test("rejects missing title", () => {
   assert.throws(() => parseJsonl('{"kind":"tool"}\n'), /missing title/);
 });
 
+test("reports physical line numbers when blank lines are skipped", () => {
+  const input = [
+    "",
+    '{"kind":"command","title":"Run tests"}',
+    "   ",
+    '{"kind":"other","title":"Nope"}'
+  ].join("\n");
+
+  assert.throws(() => parseJsonl(input), /Line 4 has invalid kind/);
+});
+
+test("identifies the physical line containing malformed JSON", () => {
+  const input = ['', '{"kind":"command","title":"Run tests"}', "{malformed}"].join("\n");
+
+  assert.throws(() => parseJsonl(input), /Line 3 contains invalid JSON/);
+});

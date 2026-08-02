@@ -22,6 +22,15 @@ function run(...args: string[]) {
   return spawnSync(process.execPath, ["dist/src/cli.js", ...args], { encoding: "utf8" });
 }
 
+function runWithInput(contents: string) {
+  const directory = mkdtempSync(join(tmpdir(), "tooltrace-cli-input-test-"));
+  const input = join(directory, "events.jsonl");
+  writeFileSync(input, contents);
+  const result = run("summarize", input);
+  rmSync(directory, { recursive: true, force: true });
+  return result;
+}
+
 test("CLI exits successfully and omits findings for resolved approval proof", () => {
   const result = check([
     { kind: "approval", title: "Approved by maintainer", status: "ok" },
@@ -46,6 +55,20 @@ test("CLI summarizes valid input", () => {
   const result = run("summarize", "examples/clean-events.jsonl", "--format", "json");
   assert.equal(result.status, 0, result.stderr);
   assert.equal(JSON.parse(result.stdout).source, "examples/clean-events.jsonl");
+});
+
+test("CLI reports schema errors at their physical line", () => {
+  const result = runWithInput('\n{"kind":"command","title":"Run tests"}\n   \n{"kind":"other","title":"Nope"}\n');
+  assert.equal(result.status, 1);
+  assert.equal(result.stdout, "");
+  assert.match(result.stderr, /^Line 4 has invalid kind\n$/);
+});
+
+test("CLI reports malformed JSON at its physical line", () => {
+  const result = runWithInput('\n{"kind":"complete","title":"Done"}\n{malformed}\n');
+  assert.equal(result.status, 1);
+  assert.equal(result.stdout, "");
+  assert.match(result.stderr, /^Line 3 contains invalid JSON: .+\n$/);
 });
 
 test("CLI prints help successfully only when explicitly requested", () => {
