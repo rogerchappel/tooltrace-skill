@@ -15,11 +15,12 @@ node dist/src/cli.js check examples/clean-events.jsonl --fail-on approval
 
 ```bash
 tooltrace-skill summarize <events.jsonl> [--out TOOLTRACE.md] [--format markdown|json]
-tooltrace-skill check <events.jsonl> [--fail-on info|approval|error]
+tooltrace-skill check <events.jsonl> [--fail-on info|approval|error] [--config .tooltrace-skill.json]
 tooltrace-skill --help
 ```
 
-`summarize` writes a Markdown or JSON report. `check` exits non-zero when findings meet the configured threshold.
+`summarize` accepts only `--out` and `--format` and writes a Markdown or JSON report. `check` accepts only
+`--fail-on` and `--config` and exits non-zero when findings meet the configured threshold.
 Commands, option values, and the input file are required exactly as shown. Supported report formats are
 `markdown` and `json`; malformed invocations exit non-zero with a diagnostic. Help exits successfully only
 when requested with `--help` or `help`.

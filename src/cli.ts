@@ -35,13 +35,30 @@ function parseArgs(argv: string[]): Args {
 
   for (let index = 0; index < rest.length; index += 1) {
     const arg = rest[index];
-    if (arg === "--out") args.out = optionValue(rest, ++index, arg);
-    else if (arg === "--format") args.format = parseFormat(optionValue(rest, ++index, arg));
-    else if (arg === "--fail-on") args.failOn = parseRisk(optionValue(rest, ++index, arg));
-    else if (arg === "--config") args.config = optionValue(rest, ++index, arg);
+    if (arg === "--out") {
+      requireCommandOption(command, arg, "summarize");
+      args.out = optionValue(rest, ++index, arg);
+    } else if (arg === "--format") {
+      requireCommandOption(command, arg, "summarize");
+      args.format = parseFormat(optionValue(rest, ++index, arg));
+    } else if (arg === "--fail-on") {
+      requireCommandOption(command, arg, "check");
+      args.failOn = parseRisk(optionValue(rest, ++index, arg));
+    } else if (arg === "--config") {
+      requireCommandOption(command, arg, "check");
+      args.config = optionValue(rest, ++index, arg);
+    }
     else throw new Error(`Unknown argument: ${arg}`);
   }
   return args;
+}
+
+function requireCommandOption(
+  command: "summarize" | "check",
+  option: string,
+  allowedCommand: "summarize" | "check"
+): void {
+  if (command !== allowedCommand) throw new Error(`${option} is not valid for ${command}`);
 }
 
 function optionValue(args: string[], index: number, option: string): string {
