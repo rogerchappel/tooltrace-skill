@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { existsSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { spawnSync } from "node:child_process";
@@ -11,7 +11,7 @@ function check(events: object[]) {
   writeFileSync(input, `${events.map((event) => JSON.stringify(event)).join("\n")}\n`);
   const result = spawnSync(
     process.execPath,
-    ["dist/src/cli.js", "check", input, "--fail-on", "approval", "--format", "json"],
+    ["dist/src/cli.js", "check", input, "--fail-on", "approval"],
     { encoding: "utf8" }
   );
   rmSync(directory, { recursive: true, force: true });
@@ -37,7 +37,7 @@ test("CLI exits successfully and omits findings for resolved approval proof", ()
     { kind: "complete", title: "Done", status: "ok" }
   ]);
   assert.equal(result.status, 0, result.stderr);
-  assert.deepEqual(JSON.parse(result.stdout).findings, []);
+  assert.match(result.stdout, /No findings\./);
 });
 
 test("CLI reports failed completion and missing proof", () => {
@@ -45,10 +45,8 @@ test("CLI reports failed completion and missing proof", () => {
     { kind: "complete", title: "Run failed before delivery", status: "failed" }
   ]);
   assert.equal(result.status, 1);
-  assert.deepEqual(
-    JSON.parse(result.stdout).findings.map((finding: { code: string }) => finding.code),
-    ["failed-event", "missing-completion-proof"]
-  );
+  assert.match(result.stdout, /failed-event/);
+  assert.match(result.stdout, /missing-completion-proof/);
 });
 
 test("CLI summarizes valid input", () => {
@@ -80,6 +78,26 @@ test("CLI prints help successfully only when explicitly requested", () => {
   assert.equal(missing.status, 1);
   assert.match(missing.stderr, /Missing command/);
 });
+
+for (const [command, option, value] of [
+  ["summarize", "--fail-on", "info"],
+  ["summarize", "--config", "examples/tooltrace-skill.config.json"],
+  ["check", "--format", "json"],
+  ["check", "--out", "report.md"]
+] as const) {
+  test(`CLI rejects ${option} for ${command} without writing output`, () => {
+    const directory = mkdtempSync(join(tmpdir(), "tooltrace-cli-option-test-"));
+    const output = join(directory, "report.md");
+    const optionValue = option === "--out" ? output : value;
+    const result = run(command, "examples/clean-events.jsonl", option, optionValue);
+
+    assert.equal(result.status, 1);
+    assert.equal(result.stdout, "");
+    assert.match(result.stderr, new RegExp(`^${option} is not valid for ${command}\\n$`));
+    assert.equal(existsSync(output), false);
+    rmSync(directory, { recursive: true, force: true });
+  });
+}
 
 for (const [name, args, diagnostic] of [
   ["unknown command", ["summrize", "examples/clean-events.jsonl"], /Unknown command: summrize/],
