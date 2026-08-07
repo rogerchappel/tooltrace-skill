@@ -9,6 +9,8 @@ tooltrace-skill summarize examples/tool-events.jsonl --format json
 
 Creates a proof summary from local JSONL events.
 
+The `summarize` command accepts only `--out` and `--format`.
+
 ## check
 
 ```bash
@@ -16,12 +18,16 @@ tooltrace-skill check examples/tool-events.jsonl --fail-on approval
 tooltrace-skill check examples/tool-events.jsonl --config examples/tooltrace-skill.config.json
 ```
 
+Runs the same analysis and exits non-zero when findings meet the selected threshold. The `check` command
+accepts only `--fail-on` and `--config`.
+
 ## Syntax and errors
 
 The command must be `summarize` or `check` and must be followed by an events file. `--out`, `--format`,
-`--fail-on`, and `--config` each require a value. Formats are limited to `markdown` and `json`, and fail
-thresholds to `info`, `approval`, and `error`. Unknown commands, unknown options, unsupported values, and
-missing values exit non-zero with a diagnostic. `tooltrace-skill --help` (or `help`) prints usage and exits 0.
+`--fail-on`, and `--config` each require a value. Options from one command are rejected when passed to the
+other. Formats are limited to `markdown` and `json`, and fail thresholds to `info`, `approval`, and `error`.
+Unknown commands, unknown options, unsupported values, and missing values exit non-zero with a diagnostic.
+`tooltrace-skill --help` (or `help`) prints usage and exits 0.
 
 Blank JSONL lines are ignored, but diagnostics always use physical line numbers from the input file. Both
 schema validation failures and malformed JSON identify the affected line. For example, this input has a blank
@@ -34,5 +40,3 @@ tooltrace-skill summarize /tmp/tooltrace-invalid.jsonl
 ```
 
 The command exits non-zero and writes the single-line diagnostic to standard error.
-
-Runs the same analysis and exits non-zero when findings meet the selected threshold.
