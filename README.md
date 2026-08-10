@@ -47,5 +47,8 @@ npm test
 npm run check
 npm run build
 npm run smoke
+npm run package:smoke
 bash scripts/validate.sh
 ```
+
+`npm run package:smoke` checks the tarball contents, installs the packed artifact in a disposable directory, and exercises `--help`, `summarize`, and `check` against the shipped examples.
