@@ -14,13 +14,13 @@
     "README.md"
   ],
   "scripts": {
-    "build": "tsc -p tsconfig.json",
+    "build": "node scripts/clean-build.mjs dist && tsc -p tsconfig.build.json",
     "check": "tsc -p tsconfig.json --noEmit",
-    "test": "node --test dist/tests/*.test.js",
-    "pretest": "npm run build",
+    "test": "node --test dist-test/tests/*.test.js",
+    "pretest": "npm run build && node scripts/clean-build.mjs dist-test && tsc -p tsconfig.test.json",
     "smoke": "npm run build && node dist/src/cli.js summarize examples/tool-events.jsonl --out /tmp/tooltrace-skill-smoke.md && test -s /tmp/tooltrace-skill-smoke.md",
     "validate": "bash scripts/validate.sh",
-    "package:smoke": "npm pack --dry-run",
+    "package:smoke": "npm run build && node scripts/verify-package.mjs",
     "release:check": "npm run check && npm test && npm run build && npm run smoke && npm run validate && npm run package:smoke"
   },
   "keywords": [

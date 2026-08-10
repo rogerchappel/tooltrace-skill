@@ -18,6 +18,7 @@ Ship.
 - `npm run check` - pass
 - `npm run build` - pass
 - `npm run smoke` - pass
+- `npm run package:smoke` - pass; reject test build artifacts, install the tarball, and exercise the packaged CLI and examples
 - `bash scripts/validate.sh` - pass
 
 ## Release Candidate Result
