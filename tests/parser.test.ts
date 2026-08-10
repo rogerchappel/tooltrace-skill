@@ -33,3 +33,19 @@ test("identifies the physical line containing malformed JSON", () => {
 
   assert.throws(() => parseJsonl(input), /Line 3 contains invalid JSON/);
 });
+
+for (const [field, value] of [
+  ["title", "Run\ntests"],
+  ["tool", "shell\rtool"],
+  ["command", "npm test\u0000--watch"],
+  ["path", "docs/CLI.md\ttemporary"]
+] as const) {
+  test(`rejects control characters in ${field} with a field and line diagnostic`, () => {
+    const input = `\n${JSON.stringify({ kind: "command", title: "Run tests", [field]: value })}\n`;
+
+    assert.throws(
+      () => parseJsonl(input),
+      new RegExp(`^Error: Line 2 field ${field} contains unsupported control characters$`)
+    );
+  });
+}

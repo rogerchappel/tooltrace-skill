@@ -2,7 +2,8 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import test from "node:test";
 import { summarize, shouldFail } from "../src/analyze.js";
-import { renderMarkdown } from "../src/render.js";
+import { parseJsonl } from "../src/parser.js";
+import { renderJson, renderMarkdown } from "../src/render.js";
 
 test("summarizes tools commands and files", () => {
   const summary = summarize("fixture", [
@@ -75,4 +76,13 @@ test("matches expected clean proof report", () => {
     { kind: "complete", title: "Proof ready", status: "ok" }
   ]);
   assert.equal(renderMarkdown(summary), readFileSync("examples/expected-clean-report.md", "utf8"));
+});
+
+test("JSON rendering preserves accepted metadata values", () => {
+  const events = parseJsonl('{"kind":"command","title":"  Run tests  ","command":"  npm test  "}\n');
+  const output = JSON.parse(renderJson(summarize("fixture", events)));
+
+  assert.equal(output.events[0].title, "Run tests");
+  assert.equal(output.events[0].command, "npm test");
+  assert.deepEqual(output.commands, ["npm test"]);
 });
