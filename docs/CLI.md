@@ -40,3 +40,16 @@ tooltrace-skill summarize /tmp/tooltrace-invalid.jsonl
 ```
 
 The command exits non-zero and writes the single-line diagnostic to standard error.
+
+Event string fields (`title`, `timestamp`, `tool`, `command`, `path`, and `detail`) must be single-line and
+must not contain ASCII control characters (U+0000 through U+001F, including tabs and newlines, or U+007F).
+Unsupported values are rejected before analysis so they cannot add Markdown lines or escape an evidence list
+item or finding's code span. The diagnostic identifies both the physical JSONL line and field, for example:
+
+```text
+Line 2 field command contains unsupported control characters
+```
+
+Accepted string values retain the existing normalization contract: leading and trailing whitespace is removed,
+and empty normalized optional fields are omitted. Markdown and JSON reports are generated from those same
+normalized values; JSON output remains valid and does not apply any additional display escaping or rewriting.

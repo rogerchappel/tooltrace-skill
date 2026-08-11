@@ -69,6 +69,26 @@ test("CLI reports malformed JSON at its physical line", () => {
   assert.match(result.stderr, /^Line 3 contains invalid JSON: .+\n$/);
 });
 
+test("CLI rejects newline-bearing evidence metadata", () => {
+  const result = runWithInput(
+    `${JSON.stringify({ kind: "tool", title: "Inspect", tool: "shell\n- Fake evidence" })}\n`
+  );
+
+  assert.equal(result.status, 1);
+  assert.equal(result.stdout, "");
+  assert.equal(result.stderr, "Line 1 field tool contains unsupported control characters\n");
+});
+
+test("CLI rejects newline-bearing finding titles", () => {
+  const result = runWithInput(
+    `${JSON.stringify({ kind: "error", title: "Failure\n- Fake finding", status: "failed" })}\n`
+  );
+
+  assert.equal(result.status, 1);
+  assert.equal(result.stdout, "");
+  assert.equal(result.stderr, "Line 1 field title contains unsupported control characters\n");
+});
+
 test("CLI prints help successfully only when explicitly requested", () => {
   const help = run("--help");
   assert.equal(help.status, 0, help.stderr);

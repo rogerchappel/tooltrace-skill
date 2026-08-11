@@ -1,5 +1,5 @@
 import { execFileSync } from "node:child_process";
-import { mkdtempSync, readFileSync, rmSync } from "node:fs";
+import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
@@ -49,7 +49,21 @@ try {
   }
   run(cli, ["check", join(installedPackage, "examples", "clean-events.jsonl"), "--fail-on", "approval"]);
 
-  process.stdout.write(`Verified ${packResult.filename}: ${packageFiles.length} files, installed CLI and shipped examples\n`);
+  const invalidEvents = join(temporaryDirectory, "invalid-events.jsonl");
+  writeFileSync(
+    invalidEvents,
+    `${JSON.stringify({ kind: "tool", title: "Inspect", tool: "shell\n- Fake evidence" })}\n`
+  );
+  try {
+    run(cli, ["summarize", invalidEvents]);
+    throw new Error("Installed CLI accepted control characters in event metadata");
+  } catch (error) {
+    if (error?.status !== 1 || error?.stdout !== "" || error?.stderr !== "Line 1 field tool contains unsupported control characters\n") {
+      throw error;
+    }
+  }
+
+  process.stdout.write(`Verified ${packResult.filename}: ${packageFiles.length} files, installed CLI, metadata diagnostics, and shipped examples\n`);
 } finally {
   rmSync(temporaryDirectory, { recursive: true, force: true });
 }
