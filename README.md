@@ -25,6 +25,10 @@ Commands, option values, and the input file are required exactly as shown. Suppo
 `markdown` and `json`; malformed invocations exit non-zero with a diagnostic. Help exits successfully only
 when requested with `--help` or `help`.
 
+Configuration files must be valid JSON and set `failOn` to exactly `info`, `approval`, or `error`.
+Malformed JSON and unsupported or missing `failOn` values fail closed: the CLI exits non-zero with a
+diagnostic naming the configuration file instead of silently choosing a threshold.
+
 ## Safety Model
 
 - No tool execution.
