@@ -7,9 +7,21 @@ export interface ToolTraceConfig {
 
 export async function readConfig(path: string | undefined): Promise<ToolTraceConfig> {
   if (!path) return { failOn: "error" };
-  const raw = JSON.parse(await readFile(path, "utf8")) as Partial<ToolTraceConfig>;
-  return {
-    failOn: raw.failOn === "info" || raw.failOn === "approval" || raw.failOn === "error" ? raw.failOn : "error"
-  };
-}
+  let raw: unknown;
+  try {
+    raw = JSON.parse(await readFile(path, "utf8"));
+  } catch (error: unknown) {
+    const detail = error instanceof Error ? error.message : String(error);
+    throw new Error(`Invalid configuration in ${path}: ${detail}`);
+  }
 
+  const failOn = typeof raw === "object" && raw !== null
+    ? (raw as { failOn?: unknown }).failOn
+    : undefined;
+  if (failOn !== "info" && failOn !== "approval" && failOn !== "error") {
+    throw new Error(
+      `Invalid configuration in ${path}: failOn must be one of info, approval, or error`
+    );
+  }
+  return { failOn };
+}
