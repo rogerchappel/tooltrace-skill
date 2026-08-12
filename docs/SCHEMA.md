@@ -37,3 +37,5 @@ Each JSONL line is one event.
 ```
 
 Allowed thresholds are `info`, `approval`, and `error`.
+The file must be valid JSON and `failOn` is required. Malformed JSON and unsupported or missing values
+produce a configuration-file diagnostic and a non-zero exit; they are never replaced with a default.

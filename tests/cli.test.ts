@@ -31,6 +31,17 @@ function runWithInput(contents: string) {
   return result;
 }
 
+function checkWithConfig(events: object[], config: string) {
+  const directory = mkdtempSync(join(tmpdir(), "tooltrace-cli-config-test-"));
+  const input = join(directory, "events.jsonl");
+  const configPath = join(directory, "config.json");
+  writeFileSync(input, `${events.map((event) => JSON.stringify(event)).join("\n")}\n`);
+  writeFileSync(configPath, config);
+  const result = run("check", input, "--config", configPath);
+  rmSync(directory, { recursive: true, force: true });
+  return result;
+}
+
 test("CLI exits successfully and omits findings for resolved approval proof", () => {
   const result = check([
     { kind: "approval", title: "Approved by maintainer", status: "ok" },
@@ -67,6 +78,27 @@ test("CLI reports malformed JSON at its physical line", () => {
   assert.equal(result.status, 1);
   assert.equal(result.stdout, "");
   assert.match(result.stderr, /^Line 3 contains invalid JSON: .+\n$/);
+});
+
+test("CLI rejects a misspelled config policy instead of passing approval-only findings", () => {
+  const result = checkWithConfig([
+    { kind: "approval", title: "Needs review", status: "pending" },
+    { kind: "complete", title: "Done", status: "ok" }
+  ], '{"failOn":"approvl"}');
+
+  assert.equal(result.status, 1);
+  assert.equal(result.stdout, "");
+  assert.match(result.stderr, /Invalid configuration in .*config\.json: failOn must be one of info, approval, or error/);
+});
+
+test("CLI rejects malformed configuration JSON", () => {
+  const result = checkWithConfig([
+    { kind: "complete", title: "Done", status: "ok" }
+  ], '{"failOn":');
+
+  assert.equal(result.status, 1);
+  assert.equal(result.stdout, "");
+  assert.match(result.stderr, /Invalid configuration in .*config\.json: .+/);
 });
 
 test("CLI rejects newline-bearing evidence metadata", () => {
