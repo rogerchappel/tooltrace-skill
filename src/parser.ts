@@ -44,9 +44,14 @@ function normalize(value: unknown, line: number): ToolEvent {
     tool: validatedString(raw.tool, "tool", line),
     command: validatedString(raw.command, "command", line),
     path: validatedString(raw.path, "path", line),
-    status: raw.status === "ok" || raw.status === "failed" || raw.status === "pending" ? raw.status : undefined,
+    status: validatedStatus(raw.status, line),
     detail: validatedString(raw.detail, "detail", line)
   };
+}
+
+function validatedStatus(value: unknown, line: number): ToolEvent["status"] {
+  if (value === undefined || value === "ok" || value === "failed" || value === "pending") return value;
+  throw new Error(`Line ${line} field status must be one of ok, failed, or pending`);
 }
 
 function validatedString(value: unknown, field: string, line: number): string | undefined {
