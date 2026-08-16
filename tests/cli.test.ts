@@ -80,6 +80,17 @@ test("CLI reports malformed JSON at its physical line", () => {
   assert.match(result.stderr, /^Line 3 contains invalid JSON: .+\n$/);
 });
 
+for (const kind of ["complete", "approval", "command"] as const) {
+  test(`CLI rejects invalid status on ${kind} events before analysis`, () => {
+    const result = runWithInput(
+      `\n${JSON.stringify({ kind, title: "Invalid producer event", status: "failure" })}\n`
+    );
+    assert.equal(result.status, 1);
+    assert.equal(result.stdout, "");
+    assert.equal(result.stderr, "Line 2 field status must be one of ok, failed, or pending\n");
+  });
+}
+
 test("CLI rejects a misspelled config policy instead of passing approval-only findings", () => {
   const result = checkWithConfig([
     { kind: "approval", title: "Needs review", status: "pending" },
