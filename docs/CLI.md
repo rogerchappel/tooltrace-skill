@@ -41,6 +41,13 @@ tooltrace-skill summarize /tmp/tooltrace-invalid.jsonl
 
 The command exits non-zero and writes the single-line diagnostic to standard error.
 
+An optional `status` must be exactly `ok`, `failed`, or `pending`. Any other present value exits non-zero
+before analysis with a line- and field-specific diagnostic:
+
+```text
+Line 2 field status must be one of ok, failed, or pending
+```
+
 Event string fields (`title`, `timestamp`, `tool`, `command`, `path`, and `detail`) must be single-line and
 must not contain ASCII control characters (U+0000 through U+001F, including tabs and newlines, or U+007F).
 Unsupported values are rejected before analysis so they cannot add Markdown lines or escape an evidence list

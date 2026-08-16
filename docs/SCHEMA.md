@@ -20,6 +20,9 @@ Each JSONL line is one event.
 | `status` | string | `ok`, `failed`, or `pending`. |
 | `detail` | string | Short detail for review. |
 
+If `status` is present, it must exactly match one of the three allowed values. Unsupported strings and
+non-string values are schema errors; they are not treated as an omitted status.
+
 ## Status semantics
 
 - An `approval` event with `status: "ok"` records a resolved approval and does not produce an `approval-requested` finding. Approvals with `status: "pending"` or no status remain unresolved findings.
