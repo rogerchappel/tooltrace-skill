@@ -17,6 +17,27 @@ test("rejects missing title", () => {
   assert.throws(() => parseJsonl('{"kind":"tool"}\n'), /missing title/);
 });
 
+test("preserves omitted and allowed status values", () => {
+  const events = parseJsonl([
+    '{"kind":"message","title":"No status"}',
+    '{"kind":"message","title":"Succeeded","status":"ok"}',
+    '{"kind":"message","title":"Failed","status":"failed"}',
+    '{"kind":"message","title":"Waiting","status":"pending"}'
+  ].join("\n"));
+
+  assert.deepEqual(events.map((event) => event.status), [undefined, "ok", "failed", "pending"]);
+});
+
+for (const status of ["failure", "complete", null, 1] as const) {
+  test(`rejects unsupported status ${JSON.stringify(status)}`, () => {
+    const input = `\n${JSON.stringify({ kind: "message", title: "Event", status })}\n`;
+    assert.throws(
+      () => parseJsonl(input),
+      /^Error: Line 2 field status must be one of ok, failed, or pending$/
+    );
+  });
+}
+
 test("reports physical line numbers when blank lines are skipped", () => {
   const input = [
     "",

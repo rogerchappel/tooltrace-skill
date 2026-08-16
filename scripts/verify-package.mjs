@@ -63,7 +63,23 @@ try {
     }
   }
 
-  process.stdout.write(`Verified ${packResult.filename}: ${packageFiles.length} files, installed CLI, metadata diagnostics, and shipped examples\n`);
+  const invalidStatusEvents = join(temporaryDirectory, "invalid-status-events.jsonl");
+  for (const kind of ["complete", "approval", "command"]) {
+    writeFileSync(
+      invalidStatusEvents,
+      `${JSON.stringify({ kind, title: "Invalid producer event", status: "failure" })}\n`
+    );
+    try {
+      run(cli, ["check", invalidStatusEvents, "--fail-on", "approval"]);
+      throw new Error(`Installed CLI accepted an invalid status on a ${kind} event`);
+    } catch (error) {
+      if (error?.status !== 1 || error?.stdout !== "" || error?.stderr !== "Line 1 field status must be one of ok, failed, or pending\n") {
+        throw error;
+      }
+    }
+  }
+
+  process.stdout.write(`Verified ${packResult.filename}: ${packageFiles.length} files, installed CLI, schema diagnostics, and shipped examples\n`);
 } finally {
   rmSync(temporaryDirectory, { recursive: true, force: true });
 }
