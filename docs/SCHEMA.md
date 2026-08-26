@@ -26,7 +26,7 @@ non-string values are schema errors; they are not treated as an omitted status.
 ## Status semantics
 
 - An `approval` event with `status: "ok"` records a resolved approval and does not produce an `approval-requested` finding. Approvals with `status: "pending"` or no status remain unresolved findings.
-- A `complete` event with `status: "failed"` records a `failed-event` finding and is not completion proof, so a trace without another non-failed `complete` event also reports `missing-completion-proof`.
+- A `complete` event is completion proof only when `status` is `"ok"` or omitted. A `pending` complete event is not proof and leaves `missing-completion-proof` in the report. A `failed` complete event additionally records a `failed-event` finding.
 - A `failed` status on any event produces a `failed-event` finding.
 
 ## Policy Config
