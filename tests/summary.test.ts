@@ -60,6 +60,15 @@ test("does not accept a failed complete event as completion proof", () => {
   ]);
 });
 
+test("does not accept a pending complete event as completion proof", () => {
+  const summary = summarize("fixture", [
+    { kind: "complete", title: "Delivery still running", status: "pending" }
+  ]);
+  assert.deepEqual(summary.findings.map((finding) => finding.code), [
+    "missing-completion-proof"
+  ]);
+});
+
 test("renders markdown proof summary", () => {
   const summary = summarize("fixture", [
     { kind: "complete", title: "Done", status: "ok" }

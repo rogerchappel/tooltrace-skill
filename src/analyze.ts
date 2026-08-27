@@ -25,7 +25,7 @@ export function summarize(source: string, events: ToolEvent[]): TraceSummary {
     if (event.kind === "error" || event.status === "failed") {
       findings.push({ risk: "error", code: "failed-event", message: "Tool flow contains a failure", title: event.title });
     }
-    if (event.kind === "complete" && event.status !== "failed") {
+    if (event.kind === "complete" && event.status !== "failed" && event.status !== "pending") {
       hasCompletionProof = true;
     }
   }

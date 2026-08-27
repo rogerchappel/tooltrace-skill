@@ -60,6 +60,14 @@ test("CLI reports failed completion and missing proof", () => {
   assert.match(result.stdout, /missing-completion-proof/);
 });
 
+test("CLI reports pending completion as missing proof", () => {
+  const result = check([
+    { kind: "complete", title: "Delivery still running", status: "pending" }
+  ]);
+  assert.equal(result.status, 1);
+  assert.match(result.stdout, /missing-completion-proof/);
+});
+
 test("CLI summarizes valid input", () => {
   const result = run("summarize", "examples/clean-events.jsonl", "--format", "json");
   assert.equal(result.status, 0, result.stderr);
